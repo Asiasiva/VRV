@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>Dental Invoice</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+
+    body {
+
+        font-family: Arial, sans-serif;
+
+        background: #f1f1f1;
+
+        margin: 0;
+
+        padding: 0;
+
+    }
+
+    .container {
+
+        max-width: 380px;
+
+        margin: auto;
+
+        background: #fff;
+
+        padding: 12px;
+
+        border: 1px solid #ccc;
+
+    }
+
+    .top-buttons {
+
+        display: flex;
+
+        gap: 8px;
+
+        margin: 10px auto;
+
+        max-width: 380px;
+
+    }
+
+    .top-buttons button {
+
+        flex: 1;
+
+        padding: 12px;
+
+        font-size: 14px;
+
+        font-weight: bold;
+
+        border-radius: 6px;
+
+        cursor: pointer;
+
+    }
+
+    #clinicName {
+
+        text-align: center;
+
+        font-size: 18px;
+
+        font-weight: bold;
+
+        margin-bottom: 8px;
+
+    }
+
+    table {
+
+        width: 100%;
+
+        border-collapse: collapse;
+
+        font-size: 13px;
+
+    }
+
+    th, td {
+
+        padding: 6px 4px;
+
+        border-bottom: 1px dashed #ccc;
+
+    }
+
+    th {
+
+        font-weight: bold;
+
+        border-bottom: 1px solid #000;
+
+        text-align: center;
+
+    }
+
+    /* PERFECT TOOTH COLUMN ALIGNMENT */
+
+    th.tooth-col, td.tooth-col {
+
+        width: 60px;
+
+        text-align: center;
+
+        vertical-align: middle;
+
+    }
+
+    .tooth-input {
+
+        width: 100%;
+
+        text-align: center;
+
+        margin: 0 auto;
+
+        padding: 0;
+
+        height: 22px;
+
+        line-height: 22px;
+
+        display: block;
+
+        font-weight: bold;
+
+    }
+
+    td input, td select {
+
+        width: 100%;
+
+        border: none;
+
+        background: transparent;
+
+        font-size: 13px;
+
+    }
+
+    .text-right { text-align: right; }
+
+    /* Totals */
+
+    .totals { margin-top: 12px; }
+
+    .totals-row {
+
+        display: flex;
+
+        justify-content: space-between;
+
+        padding: 4px 0;
+
+    }
+
+    .totals-row label { flex: 1; }
+
+    .totals-row span { flex: 1; text-align: right; }
+
+    .totals-row input {
+
+        flex: 1;
+
+        text-align: right;
+
+        border: none;
+
+        border-bottom: 1px dashed #555;
+
+        padding: 3px;
+
+    }
+
+    .footer {
+
+        text-align: center;
+
+        font-size: 12px;
+
+        margin-top: 12px;
+
+        padding-top: 10px;
+
+    }
+
+    @media print {
+
+        .no-print { display:none !important; }
+
+        body { background:#fff; }
+
+        @page { size:58mm auto; margin:2mm; }
+
+        .container { border:none; padding:0; }
+
+    }
+
+    #serviceModal {
+
+        display:none;
+
+        position:fixed;
+
+        top:0; left:0;
+
+        width:100%; height:100%;
+
+        background:rgba(0,0,0,0.4);
+
+        padding-top:60px;
+
+        z-index:9999;
+
+    }
+
+    #serviceModal .modal-box {
+
+        background:#fff;
+
+        margin:auto;
+
+        padding:15px;
+
+        width: 85%;
+
+        max-width:300px;
+
+        border-radius:8px;
+
+    }
+
+</style>
+
+</head>
+
+<body>
+
+<div class="top-buttons no-print">
+
+    <button onclick="addRow()">+ Add</button>
+
+    <button onclick="openServiceManager()">Manage</button>
+
+    <button onclick="window.print()">Print</button>
+
+</div>
+
+<div class="container">
+
+    <div id="clinicName" contenteditable="true">VRV Dental Clinic</div>
+
+    <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:8px;">
+
+        <span id="invoiceDate"></span>
+
+        <span id="invoiceNumber"></span>
+
+    </div>
+
+    <table id="invoiceTable">
+
+        <thead>
+
+            <tr>
+
+                <th>No</th>
+
+                <th>Service</th>
+
+                <th class="tooth-col">Tooth<br><small></small></th>
+
+                <th class="text-right">Price<br><small></small></th>
+
+                <th class="no-print">X</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody></tbody>
+
+    </table>
+
+    <div class="totals">
+
+        <div class="totals-row"><label>Subtotal:</label><span id="subTotal">0.00</span></div>
+
+        <div class="totals-row">
+
+            <label>GST %:</label>
+
+            <input type="number" id="gstPercent" value="0">
+
+        </div>
+
+        <div class="totals-row"><label>GST Amount:</label><span id="gstAmount">0.00</span></div>
+
+        <div class="totals-row">
+
+            <label>Discount:</label>
+
+            <input type="number" id="discount" value="0">
+
+        </div>
+
+        <div class="totals-row" style="border-top:1px solid #000; margin-top:5px; padding-top:5px;">
+
+            <label><b>Grand Total:</b></label>
+
+            <span id="grandTotal"><b>0.00</b></span>
+
+        </div>
+
+    </div>
+
+    <div class="footer">Take care your health !</div>
+
+</div>
+
+<!-- Service Manager -->
+
+<div id="serviceModal">
+
+    <div class="modal-box">
+
+        <h3>Service Manager</h3>
+
+        <label>Service Name</label>
+
+        <input type="text" id="serviceName">
+
+        <label>Price</label>
+
+        <input type="number" id="servicePrice">
+
+        <div style="margin-top:10px; display:flex; gap:5px;">
+
+            <button onclick="saveService()">Save</button>
+
+            <button onclick="closeServiceManager()">Close</button>
+
+        </div>
+
+        <h4>Services</h4>
+
+        <ul id="serviceList"></ul>
+
+    </div>
+
+</div>
+
+<script>
+
+let services = [
+
+    {name:"Consultation", price:100},
+
+    {name:"Cleaning", price:500},
+
+    {name:"Filling", price:1200},
+
+    {name:"Root Canal", price:3500},
+
+];
+
+let editIndex = -1;
+
+let rowServiceValues = [];
+
+/* Header */
+
+function initHeader(){
+
+    const now = new Date();
+
+    document.getElementById("invoiceDate").innerText =
+
+        now.toLocaleDateString()+" "+now.toLocaleTimeString().slice(0,5);
+
+    document.getElementById("invoiceNumber").innerText =
+
+        "INV-"+now.getFullYear()+(now.getMonth()+1)+now.getDate()+"-"+now.getHours()+now.getMinutes();
+
+}
+
+/* Service Manager */
+
+function openServiceManager(){
+
+    document.getElementById("serviceModal").style.display="block";
+
+    updateServiceListUI();
+
+}
+
+function closeServiceManager(){
+
+    document.getElementById("serviceModal").style.display="none";
+
+}
+
+function updateServiceListUI(){
+
+    let ul=document.getElementById("serviceList");
+
+    ul.innerHTML="";
+
+    services.forEach((s,i)=>{
+
+        ul.innerHTML+=`
+
+            <li>${s.name} - ₹${s.price}
+
+                <button onclick="editService(${i})">Edit</button>
+
+                <button onclick="deleteService(${i})">X</button>
+
+            </li>`;
+
+    });
+
+}
+
+function saveService(){
+
+    let name=document.getElementById("serviceName").value;
+
+    let price=parseFloat(document.getElementById("servicePrice").value);
+
+    if(!name||isNaN(price)){ alert("Invalid"); return; }
+
+    if(editIndex===-1) services.push({name,price});
+
+    else services[editIndex]={name,price};
+
+    editIndex=-1;
+
+    document.getElementById("serviceName").value="";
+
+    document.getElementById("servicePrice").value="";
+
+    updateServiceListUI();
+
+}
+
+function editService(i){
+
+    editIndex=i;
+
+    document.getElementById("serviceName").value=services[i].name;
+
+    document.getElementById("servicePrice").value=services[i].price;
+
+}
+
+function deleteService(i){
+
+    services.splice(i,1);
+
+    updateServiceListUI();
+
+}
+
+/* Add Row */
+
+function addRow(){
+
+    const tbody=document.querySelector("#invoiceTable tbody");
+
+    const tr=document.createElement("tr");
+
+    tr.innerHTML=`
+
+        <td class="sno"></td>
+
+        <td>
+
+            <select class="service-select" onchange="serviceChanged(this)">
+
+                <option value="">Select</option>
+
+                ${services.map((s,i)=>`<option value="${i}">${s.name}</option>`).join('')}
+
+            </select>
+
+        </td>
+
+        <td class="tooth-col"><input type="text" class="tooth-input" placeholder="No"></td>
+
+        <td class="text-right"><input type="number" class="price-input" style="text-align:right;"></td>
+
+        <td class="no-print"><button onclick="deleteRow(this)">X</button></td>
+
+    `;
+
+    tbody.appendChild(tr);
+
+    updateSerial();
+
+    /* Restore service selections */
+
+    document.querySelectorAll(".service-select").forEach((sel,index)=>{
+
+        if(rowServiceValues[index] !== undefined){
+
+            sel.value = rowServiceValues[index];
+
+        }
+
+    });
+
+}
+
+/* Service Selection */
+
+function serviceChanged(sel){
+
+    const row = sel.closest("tr");
+
+    const rowIndex = [...row.parentNode.children].indexOf(row);
+
+    rowServiceValues[rowIndex] = sel.value;
+
+    if(sel.value !== ""){
+
+        row.querySelector(".price-input").value = services[sel.value].price;
+
+    }
+
+    updateTotals();
+
+}
+
+/* Delete Row */
+
+function deleteRow(btn){
+
+    const row = btn.closest("tr");
+
+    const rowIndex = [...row.parentNode.children].indexOf(row);
+
+    rowServiceValues.splice(rowIndex,1);
+
+    row.remove();
+
+    updateSerial();
+
+    updateTotals();
+
+}
+
+/* Serial Update */
+
+function updateSerial(){
+
+    document.querySelectorAll(".sno").forEach((td,i)=> td.innerText=i+1 );
+
+}
+
+/* Total Calculation */
+
+function updateTotals(){
+
+    let subtotal=0;
+
+    document.querySelectorAll(".price-input").forEach(inp=>{
+
+        let v=parseFloat(inp.value);
+
+        if(!isNaN(v)) subtotal+=v;
+
+    });
+
+    document.getElementById("subTotal").innerText=subtotal.toFixed(2);
+
+    const gstP=parseFloat(document.getElementById("gstPercent").value)||0;
+
+    const gstAmt=subtotal*gstP/100;
+
+    document.getElementById("gstAmount").innerText=gstAmt.toFixed(2);
+
+    const discount=parseFloat(document.getElementById("discount").value)||0;
+
+    document.getElementById("grandTotal").innerText=(subtotal+gstAmt-discount).toFixed(2);
+
+}
+
+document.getElementById("gstPercent").addEventListener("input",updateTotals);
+
+document.getElementById("discount").addEventListener("input",updateTotals);
+
+window.onload=function(){
+
+    initHeader();
+
+    addRow();
+
+};
+
+</script>
+
+</body>
+
+</html>
